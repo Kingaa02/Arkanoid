@@ -19,14 +19,19 @@ public:
 
 	pilka()
 	{
-		x = 20;
-		y = 20;
-		speed = 2;
+		x = SCREEN_WIDTH/2;
+		y = SCREEN_HEIGHT/2;
+		speed = 0;
 		vx = speed;
 		vy = speed;
 
 		promien = 15;
 
+	}
+
+	void set_speed(int s)
+	{
+		speed = s;
 	}
 };
 
@@ -37,7 +42,7 @@ public:
 
 	paletka()
 	{
-		dx = 15;
+		dx = 10;
 		x = 250;
 		x2 = x + 100;
 		y = 400;
@@ -65,7 +70,6 @@ public:
 	{
 
 	}
-
 };
 
 
@@ -73,12 +77,22 @@ bool collision(pilka* ball, block* blocks[], int n)
 {
 	for (int i = 0; i < n; i++)
 	{
+		///Sprawdzenie czy pi³ka dotknê³a bloku
 		if (ball->x + ball->promien >= blocks[i]->x &&
 			ball->x - ball->promien <= blocks[i]->x2 &&
 			ball->y + ball->promien >= blocks[i]->y &&
 			ball->y - ball->promien <= blocks[i]->y2)
 		{
-			ball->vy *= -1;
+		///Sprawdzenie z której strony blok zostal dotkniêty góra/dó³/lewo/prawo
+			if (ball->x < blocks[i]->x || ball->x > blocks[i]->x2)
+			{
+				ball->vx *= (-1);
+			}
+			else
+			{
+				ball->vy *= (-1);
+			}
+
 			delete(blocks[i]);
 			return true;
 		}
@@ -95,30 +109,34 @@ void odbijanie(pilka* ball, paletka p, block* blocks[], int n)
 	ball->x += ball->vx;
 	ball->y += ball->vy;
 
-	if (ball->x + ball->promien >= SCREEN_WIDTH)
-	{
-		ball->vx = ball->speed * (-1);
-	}
-
-	if (ball->y + ball->promien >= SCREEN_HEIGHT)
-	{
-		ball->vy = ball->speed * (-1);
-	}
-
-	if (ball->y - ball->promien <= 0)
-	{
-		ball->vy = ball->speed;
-	}
-
+	///Kolizja pi³ki z lew¹ stron¹ ekranu
 	if (ball->x - ball->promien <= 0)
 	{
-		ball->vx = ball->speed;
+		ball->vx *=(-1);
 	}
 
+	///Kolizja pi³ki z praw¹ stron¹ ekranu
+	if (ball->x + ball->promien >= SCREEN_WIDTH)
+	{
+		ball->vx *= (-1);
+	}
+	///Kolizja pi³ki z do³em stron¹ ekranu
+	if (ball->y + ball->promien >= SCREEN_HEIGHT)
+	{
+		ball->vy *= (-1);
+	}
+	///Kolizja pi³ki z gór¹ stron¹ ekranu
+	if (ball->y - ball->promien <= 0)
+	{
+		ball->vy *= (-1);
+	}
+	
 
+	///Kolizja pi³ki z paletk¹
 	if (ball->y + ball->promien > p.y && ball->y + ball->promien < p.y2)
 	{
 		if (ball->x + ball->promien > p.x && ball->x + ball->promien < p.x2)
+			if(ball->x + ball->promien > p.x && ball->x + ball->promien < p.x2)
 			ball->vy = ball->speed * (-1);
 		
 	}
@@ -142,11 +160,6 @@ int main()
 {
 	pilka b;
 	paletka p;
-	block a(100);
-
-
-
-
 
 	sprawdznie_init(al_init(), "allegro");
 	sprawdznie_init(al_install_keyboard(), "klawiatura");
@@ -216,8 +229,9 @@ int main()
 		}
 	}
 
-	
-
+	bool right = false;
+	bool left = false;
+	int pressed = false;
 	al_start_timer(timer);
 
 	while (true)
@@ -227,36 +241,71 @@ int main()
 		switch (event.type)
 		{
 		case ALLEGRO_EVENT_TIMER:
-			// Poruszanie siê pi³ki
+	///Poruszanie siê pi³ki
 			odbijanie(&b, p, blocks, n);
 
 
-			redraw = true;
-			break;
-		case ALLEGRO_EVENT_KEY_CHAR:
-			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT)
+	/// Poruszanie paletki
+			if (right)
 			{
+				/// Ograniczenie ruchu paletki na szerokoœæ ekranu z prawej strony
 				if (p.x < SCREEN_WIDTH && p.x2 < SCREEN_WIDTH)
 				{
 					p.x += p.dx;
 					p.x2 += p.dx;
 				}
-
+				
 			}
-
-			if (event.keyboard.keycode == ALLEGRO_KEY_LEFT)
+				
+			if (left)
 			{
+				/// Ograniczenie ruchu paletki na szerokoœæ ekranu z prawej strony
 				if (p.x > 0 && p.x2 > 0)
 				{
 					p.x -= p.dx;
 					p.x2 -= p.dx;
 				}
-
+				
 			}
+			redraw = true;
+			break;
+
+			/// Poruszanie paletki wykrywanie kierunku 
+		case ALLEGRO_EVENT_KEY_DOWN:
+			/// Wykrywanie wciœniêcia przycisku  
+			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT) 
+				right = true;
+
+			if (event.keyboard.keycode == ALLEGRO_KEY_LEFT)
+				left = true;
 
 
+			/// Wyrzucenie pi³ki
+			if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
+			{
+				
+				if (!pressed)
+				{
+					b.speed = 5;
+					b.vx = b.vy = b.speed;
+					pressed = true;
+				}
+				
+				
+			}
+			
+		
+			break;
+			/// Wykrywanie puszczenia przycisku
+		case ALLEGRO_EVENT_KEY_UP:
+			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT)
+				right = false;
+
+			if (event.keyboard.keycode == ALLEGRO_KEY_LEFT)
+				left = false;
 
 			break;
+
 		case ALLEGRO_EVENT_DISPLAY_CLOSE:
 			done = true;
 			break;
@@ -267,16 +316,16 @@ int main()
 
 		if (redraw && al_is_event_queue_empty(queue))
 		{
+			///Odœwierzanie ekranu
 			al_clear_to_color(al_map_rgb(255, 255, 255));
-	// Wyœwietlanie pi³ki 
+	/// Wyœwietlanie pi³ki 
 			al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(121, 29, 91));
-	// Wyœwietlanie paletki
+	/// Wyœwietlanie paletki
 			al_draw_rectangle(p.x, p.y, p.x2, p.y2, al_map_rgb(0, 0, 0), 2);
 
-	//Wyœwietlanie bloków
+	///Wyœwietlanie bloków
 			for (int i = 0; i < n; i++)
 			{
-
 				al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 2);
 			}
 
