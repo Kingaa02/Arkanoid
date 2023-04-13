@@ -5,8 +5,8 @@
 #include<vector>
 using namespace std;
 
-int width = 640;
-int height = 480;
+int SCREEN_WIDTH = 976;
+int SCREEN_HEIGHT = 582;
 
 
 class pilka {
@@ -89,19 +89,18 @@ bool collision(pilka* ball, block* blocks[], int n)
 }
 
 
-
-
+// Kolizja z œcianami 
 void odbijanie(pilka* ball, paletka p, block* blocks[], int n)
 {
 	ball->x += ball->vx;
 	ball->y += ball->vy;
 
-	if (ball->x + ball->promien >= width)
+	if (ball->x + ball->promien >= SCREEN_WIDTH)
 	{
 		ball->vx = ball->speed * (-1);
 	}
 
-	if (ball->y + ball->promien >= height)
+	if (ball->y + ball->promien >= SCREEN_HEIGHT)
 	{
 		ball->vy = ball->speed * (-1);
 	}
@@ -121,6 +120,7 @@ void odbijanie(pilka* ball, paletka p, block* blocks[], int n)
 	{
 		if (ball->x + ball->promien > p.x && ball->x + ball->promien < p.x2)
 			ball->vy = ball->speed * (-1);
+		
 	}
 	collision(ball, blocks, n);
 
@@ -154,7 +154,7 @@ int main()
 
 
 
-	ALLEGRO_DISPLAY* display = al_create_display(width, height);
+	ALLEGRO_DISPLAY* display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
 	sprawdznie_init(display, "Obraz");
 
 
@@ -176,10 +176,6 @@ int main()
 
 	ALLEGRO_EVENT event;
 
-	// TUTAJ TERAZ ROBISZ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
 	const int ilosc_wierszy = 6;
 	const int ilosc_rzedow = 13;
 	const int n = (ilosc_wierszy * ilosc_rzedow);
@@ -189,35 +185,12 @@ int main()
 	for (int i = 0; i < n; i++)
 	{
 		if (i == 0)
-			blocks[i] = new block(100);
+			blocks[i] = new block(150);
 		else
 			blocks[i] = new block();
 	}
 
-	for (int i = 0; i < 3; i++)
-	{
-		blocks[i + 1]->x = blocks[i]->x2;
-		blocks[i + 1]->y = blocks[i]->y2 - 20;
-
-		blocks[i + 1]->x2 = blocks[i + 1]->x + 50;
-		blocks[i + 1]->y2 = blocks[i + 1]->y + 20;
-	}
-
-
-
-	for (int i = 3; i < 6; i++)
-	{
-
-
-		blocks[i]->x = blocks[i - 3]->x;
-		blocks[i]->y = blocks[i - 3]->y - 20;
-
-		blocks[i]->x2 = blocks[i - 3]->x2;
-		blocks[i]->y2 = blocks[i - 3]->y2;
-	}
-
-
-	/*int z = 0;
+	int z = 0;
 	for (int i = 0; i < ilosc_wierszy; i++)
 	{
 		for (int j = 0; j < ilosc_rzedow; j++)
@@ -234,16 +207,16 @@ int main()
 			else
 			{
 				blocks[z]->x = blocks[z - ilosc_rzedow]->x;
-				blocks[z]->y = blocks[z - ilosc_rzedow]->y - 20;
+				blocks[z]->y = blocks[z - ilosc_rzedow]->y-20;
 
 				blocks[z]->x2 = blocks[z - ilosc_rzedow]->x2;
-				blocks[z]->y2 = blocks[z - ilosc_rzedow]->y2 - 10;
+				blocks[z]->y2 = blocks[z - ilosc_rzedow]->y2 - 20;
 				z++;
 			}
 		}
 	}
 
-	*/
+	
 
 	al_start_timer(timer);
 
@@ -263,7 +236,7 @@ int main()
 		case ALLEGRO_EVENT_KEY_CHAR:
 			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT)
 			{
-				if (p.x < width && p.x2 < width)
+				if (p.x < SCREEN_WIDTH && p.x2 < SCREEN_WIDTH)
 				{
 					p.x += p.dx;
 					p.x2 += p.dx;
@@ -295,15 +268,13 @@ int main()
 		if (redraw && al_is_event_queue_empty(queue))
 		{
 			al_clear_to_color(al_map_rgb(255, 255, 255));
+	// Wyœwietlanie pi³ki 
 			al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(121, 29, 91));
-
-
-
-
+	// Wyœwietlanie paletki
 			al_draw_rectangle(p.x, p.y, p.x2, p.y2, al_map_rgb(0, 0, 0), 2);
 
-
-			for (int i = 0; i < 6; i++)
+	//Wyœwietlanie bloków
+			for (int i = 0; i < n; i++)
 			{
 
 				al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 2);
