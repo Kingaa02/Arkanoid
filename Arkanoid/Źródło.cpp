@@ -3,108 +3,14 @@
 #include<math.h>
 #include<iostream>
 #include<vector>
+#include "Pilka.h"
+#include"Paletka.h"
+#include"Block.h"
 using namespace std;
-
-int SCREEN_WIDTH = 976;
-int SCREEN_HEIGHT = 582;
-
-
-class pilka {
-public:
-	float promien;
-	float x, y;
-	float vx, vy;
-	float speed;
-
-
-	pilka()
-	{
-		x = SCREEN_WIDTH/2;
-		y = SCREEN_HEIGHT/2;
-		speed = 0;
-		vx = speed;
-		vy = speed;
-
-		promien = 15;
-
-	}
-
-	void set_speed(int s)
-	{
-		speed = s;
-	}
-};
-
-class paletka {
-public:
-	float x = 0, x2 = 0, y = 0, y2 = 0;
-	float dx = 0, dy = 0;
-
-	paletka()
-	{
-		dx = 10;
-		x = 250;
-		x2 = x + 100;
-		y = 400;
-		y2 = y + 20;
-	}
-
-};
-
-class block {
-public:
-	float x = 0, x2 = 0;
-	float y = 0, y2 = 0;
-	float points = 0;
-
-	block(int x)
-	{
-		this->x = x;
-		x2 = this->x + 50;
-		y = 200;
-		y2 = y + 20;
-
-	}
-
-	block()
-	{
-
-	}
-};
-
-
-bool collision(pilka* ball, block* blocks[], int n)
-{
-	for (int i = 0; i < n; i++)
-	{
-		///Sprawdzenie czy pi³ka dotknê³a bloku
-		if (ball->x + ball->promien >= blocks[i]->x &&
-			ball->x - ball->promien <= blocks[i]->x2 &&
-			ball->y + ball->promien >= blocks[i]->y &&
-			ball->y - ball->promien <= blocks[i]->y2)
-		{
-		///Sprawdzenie z której strony blok zostal dotkniêty góra/dó³/lewo/prawo
-			if (ball->x < blocks[i]->x || ball->x > blocks[i]->x2)
-			{
-				ball->vx *= (-1);
-			}
-			else
-			{
-				ball->vy *= (-1);
-			}
-
-			delete(blocks[i]);
-			return true;
-		}
-
-	}
-
-	return false;
-}
 
 
 // Kolizja z œcianami 
-void odbijanie(pilka* ball, paletka p, block* blocks[], int n)
+void odbijanie(Pilka* ball, Paletka p, Block* blocks[], int n)
 {
 	ball->x += ball->vx;
 	ball->y += ball->vy;
@@ -123,7 +29,9 @@ void odbijanie(pilka* ball, paletka p, block* blocks[], int n)
 	///Kolizja pi³ki z do³em stron¹ ekranu
 	if (ball->y + ball->promien >= SCREEN_HEIGHT)
 	{
-		ball->vy *= (-1);
+		ball->x = SCREEN_WIDTH / 2 - 50;
+		ball->y = SCREEN_HEIGHT / 2;
+		ball->set_speed(0);
 	}
 	///Kolizja pi³ki z gór¹ stron¹ ekranu
 	if (ball->y - ball->promien <= 0)
@@ -140,7 +48,7 @@ void odbijanie(pilka* ball, paletka p, block* blocks[], int n)
 			ball->vy = ball->speed * (-1);
 		
 	}
-	collision(ball, blocks, n);
+	ball->collision(ball, blocks, n);
 
 
 }
@@ -158,8 +66,8 @@ void sprawdznie_init(bool test, string opis)
 
 int main()
 {
-	pilka b;
-	paletka p;
+	Pilka b;
+	Paletka p;
 
 	sprawdznie_init(al_init(), "allegro");
 	sprawdznie_init(al_install_keyboard(), "klawiatura");
@@ -193,14 +101,16 @@ int main()
 	const int ilosc_rzedow = 13;
 	const int n = (ilosc_wierszy * ilosc_rzedow);
 
-	block* blocks[n];
+	Block* blocks[n];
+
+
 
 	for (int i = 0; i < n; i++)
 	{
 		if (i == 0)
-			blocks[i] = new block(150);
+			blocks[i] = new Block(150);
 		else
-			blocks[i] = new block();
+			blocks[i] = new Block();
 	}
 
 	int z = 0;
@@ -286,9 +196,7 @@ int main()
 				
 				if (!pressed)
 				{
-					b.speed = 5;
-					b.vx = b.vy = b.speed;
-					pressed = true;
+					b.set_speed(5);
 				}
 				
 				
@@ -316,7 +224,7 @@ int main()
 
 		if (redraw && al_is_event_queue_empty(queue))
 		{
-			///Odœwierzanie ekranu
+	///Odœwierzanie ekranu
 			al_clear_to_color(al_map_rgb(255, 255, 255));
 	/// Wyœwietlanie pi³ki 
 			al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(121, 29, 91));
