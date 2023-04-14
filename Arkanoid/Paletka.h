@@ -1,7 +1,7 @@
 #pragma once
 #include"Pilka.h"
 
-
+#define SCREEN_WIDTH  976
 class Paletka
 {
 public:

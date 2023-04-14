@@ -1,5 +1,7 @@
 #include <allegro5/allegro.h>
 #include<allegro5/allegro_primitives.h>
+#include<allegro5/allegro_font.h>
+#include<allegro5/allegro_ttf.h>
 #include<math.h>
 #include<iostream>
 #include<vector>
@@ -9,8 +11,9 @@
 using namespace std;
 
 
+
 // Kolizja z œcianami 
-void odbijanie(Pilka* ball, Paletka p, Block* blocks[], int n)
+void odbijanie(Pilka* ball, Paletka p, Block* blocks[], int n,Block* health[],int *z)
 {
 	ball->x += ball->vx;
 	ball->y += ball->vy;
@@ -32,6 +35,12 @@ void odbijanie(Pilka* ball, Paletka p, Block* blocks[], int n)
 		ball->x = SCREEN_WIDTH / 2 - 50;
 		ball->y = SCREEN_HEIGHT / 2;
 		ball->set_speed(0);
+		if (*z >= 0)
+		{
+			delete(health[*z]);
+			*z -= 1;
+		}
+		
 	}
 	///Kolizja pi³ki z gór¹ stron¹ ekranu
 	if (ball->y - ball->promien <= 0)
@@ -72,6 +81,8 @@ int main()
 	sprawdznie_init(al_init(), "allegro");
 	sprawdznie_init(al_install_keyboard(), "klawiatura");
 	sprawdznie_init(al_init_primitives_addon(), "primitives addon");
+	sprawdznie_init(al_init_font_addon(), "czcionka");
+	sprawdznie_init(al_init_ttf_addon(), "TTF");
 
 
 
@@ -85,6 +96,9 @@ int main()
 
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 	sprawdznie_init(queue, "Kolejka");
+
+	ALLEGRO_FONT* font = al_load_font("FjallaOne.ttf", 20, 0);
+	ALLEGRO_FONT* font2 = al_load_font("FjallaOne.ttf", 100, 0);
 
 
 	al_register_event_source(queue, al_get_keyboard_event_source());
@@ -139,10 +153,39 @@ int main()
 		}
 	}
 
+
+	
 	bool right = false;
 	bool left = false;
 	int pressed = false;
 	al_start_timer(timer);
+
+	int health_z = 2;
+	Block* health[3];
+
+	for (int i = 0; i < 3; i++)
+	{
+		health[i] = new Block();
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (i == 0)
+		{
+			health[i]->x = 10;
+			health[i]->y = 30;
+			health[i]->x2 = 30;
+			health[i]->y2 = 50;
+		}
+		else
+		{
+			health[i]->x = health[i - 1]->x2;
+			health[i]->y = health[i - 1]->y;
+			health[i]->x2 = health[i - 1]->x2+20;
+			health[i]->y2 = health[i - 1]->y2;
+		}
+		
+	}
 
 	while (true)
 	{
@@ -152,7 +195,7 @@ int main()
 		{
 		case ALLEGRO_EVENT_TIMER:
 	///Poruszanie siê pi³ki
-			odbijanie(&b, p, blocks, n);
+			odbijanie(&b, p, blocks, n,health,&health_z);
 
 
 	/// Poruszanie paletki
@@ -225,17 +268,41 @@ int main()
 		if (redraw && al_is_event_queue_empty(queue))
 		{
 	///Odœwierzanie ekranu
-			al_clear_to_color(al_map_rgb(255, 255, 255));
-	/// Wyœwietlanie pi³ki 
-			al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(121, 29, 91));
-	/// Wyœwietlanie paletki
-			al_draw_rectangle(p.x, p.y, p.x2, p.y2, al_map_rgb(0, 0, 0), 2);
+			al_clear_to_color(al_map_rgb(28, 28, 28));
+	
 
 	///Wyœwietlanie bloków
-			for (int i = 0; i < n; i++)
+
+			if (health_z >= 0)
 			{
-				al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 2);
+				/// Wyœwietlanie pi³ki 
+				al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(255, 33, 33));
+				/// Wyœwietlanie paletki
+				al_draw_filled_rectangle(p.x, p.y, p.x2, p.y2, al_map_rgb(66, 218, 245));
+
+				al_draw_text(font, al_map_rgb(12, 213, 123), 10, 0, 0, "HEALTH");
+
+				for (int i = 0; i < n; i++)
+				{
+					al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(245, 102, 66));
+					al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(255, 255, 255), 2);
+				}
+
+				for (int i = 0; i < 3; i++)
+				{
+					al_draw_filled_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(12, 213, 123));
+					al_draw_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(255, 255, 255), 2);
+
+
+				}
 			}
+			else
+			{
+			
+				al_draw_text(font2, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, "GAME OVER");
+			}
+			
+
 
 			al_flip_display();
 
