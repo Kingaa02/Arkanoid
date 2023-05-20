@@ -1,7 +1,7 @@
 #pragma once
 
 
-#define SCREEN_WIDTH  976
+#define SCREEN_WIDTH 976
 class Paletka
 {
 public:

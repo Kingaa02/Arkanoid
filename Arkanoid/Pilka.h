@@ -1,8 +1,8 @@
 #pragma once
 #include"Block.h"
 #include"Paletka.h"
-#define SCREEN_WIDTH  976
-#define SCREEN_HEIGHT  582
+#define SCREEN_WIDTH 976
+#define SCREEN_HEIGHT 614
 
 class Pilka
 {
