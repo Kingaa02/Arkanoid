@@ -153,6 +153,12 @@ bool Game::game_loop() {
 	ALLEGRO_MOUSE_CURSOR* cursor = al_create_mouse_cursor(cursorImage, 0, 0);
 	al_set_mouse_cursor(display, cursor);
 
+	bool returnToMenu = false;
+	int buttonX = SCREEN_WIDTH / 2 - 100; 
+	int buttonY = SCREEN_HEIGHT / 2 + 150; 
+	int buttonWidth = 200; 
+	int buttonHeight = 50; 
+
 	while (true && running)
 	{
 		al_wait_for_event(queue, &event);
@@ -259,24 +265,30 @@ bool Game::game_loop() {
 
 			if (event.mouse.button & 1)
 			{
-				/// Nowa gra
+				// Nowa gra
 				if (event.mouse.x > SCREEN_WIDTH / 2 - 75 && event.mouse.x < SCREEN_WIDTH / 2 + 65 && event.mouse.y > SCREEN_HEIGHT / 2 - 30 && event.mouse.y < SCREEN_HEIGHT / 2 - 5)
 				{
 					menu = false;
 					new_game = true;
 				}
-				
+
 				if (!new_game)
 				{
-					//Wyjœcie
+					// Wyjœcie
 					if (event.mouse.x > SCREEN_WIDTH / 2 - 65 && event.mouse.x < SCREEN_WIDTH / 2 + 55 && event.mouse.y > SCREEN_HEIGHT / 2 + 30 && event.mouse.y < SCREEN_HEIGHT / 2 + 70)
 					{
 						menu = false;
 						running = false;
-						done;
+						done = true; // Poprawka: Przypisanie wartoœci true do zmiennej done
 					}
 				}
 
+				// Powrót do menu
+				if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
+					event.mouse.y >= buttonY && event.mouse.y <= buttonY + buttonHeight)
+				{
+					returnToMenu = true;
+				}
 			}
 			break;
 
@@ -291,10 +303,18 @@ bool Game::game_loop() {
 
 		if (done)
 			break;
-		
+
+		if (returnToMenu)
+		{
+			menu = true;
+			new_game = false;
+			returnToMenu = false; // Zresetowanie wartoœci returnToMenu
+		}
+
+
 		if (redraw && al_is_event_queue_empty(queue) && new_game)
 		{
-			///Odœwiezanie ekranu
+			///Odœwie¿anie ekranu
 			al_clear_to_color(al_map_rgb(28, 28, 28));
 
 			///Wyœwietlanie bloków
@@ -318,20 +338,32 @@ bool Game::game_loop() {
 				{
 					al_draw_filled_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(12, 213, 123));
 					al_draw_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(255, 255, 255), 2);
-
-
 				}
 			}
 			else
 			{
+				al_draw_text(font2, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + -50, ALLEGRO_ALIGN_CENTER, "GAME OVER");
 
-				al_draw_text(font2, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + - 50, ALLEGRO_ALIGN_CENTER, "GAME OVER");
+				al_draw_filled_rectangle(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, al_map_rgb(66, 218, 245));
+				al_draw_rectangle(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, al_map_rgb(255, 255, 255), 2);
+				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 155, ALLEGRO_ALIGN_CENTER, "Menu");
+
+				if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button & 1)
+				{
+					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
+						event.mouse.y >= buttonY && event.mouse.y <= buttonY + buttonHeight)
+					{
+						menu = true;
+						new_game = false;
+						returnToMenu = false; // Zresetowanie wartoœci returnToMenu
+					}
+				}
 			}
 
 			redraw = false;
 		}
 		al_flip_display();
-	}
+}
 
 	al_destroy_display(display);
 	al_destroy_timer(timer);
