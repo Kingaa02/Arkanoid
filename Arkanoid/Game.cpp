@@ -9,6 +9,71 @@ void Game::sprawdzenie_init(bool test, string opis){
 	cout << "Nie udalo sie uruchomic " << opis << endl;
 }
 
+//Inicjalizacja ¿ycia
+void initializeHealthBlocks(Block* health[], int health_z)
+{
+	for (int i = 0; i < 3; i++)
+	{
+		health[i] = new Block();
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		if (i == 0)
+		{
+			health[i]->x = 10;
+			health[i]->y = 30;
+			health[i]->x2 = 30;
+			health[i]->y2 = 50;
+		}
+		else
+		{
+			health[i]->x = health[i - 1]->x2;
+			health[i]->y = health[i - 1]->y;
+			health[i]->x2 = health[i - 1]->x2 + 20;
+			health[i]->y2 = health[i - 1]->y2;
+		}
+	}
+}
+
+//Inicjalizacja bloków
+Block** createBlocks(int n, int ilosc_wierszy, int ilosc_rzedow) {
+	Block** blocks = new Block * [n];
+
+	for (int i = 0; i < n; i++) {
+		if (i == 0)
+			blocks[i] = new Block(150);
+		else
+			blocks[i] = new Block();
+	}
+
+	int z = 0;
+	for (int i = 0; i < ilosc_wierszy; i++) {
+		for (int j = 0; j < ilosc_rzedow; j++) {
+			if (i == 0) {
+				blocks[j + 1]->x = blocks[j]->x2;
+				blocks[j + 1]->y = blocks[j]->y2 - 20;
+
+				blocks[j + 1]->x2 = blocks[j + 1]->x + 50;
+				blocks[j + 1]->y2 = blocks[j + 1]->y + 20;
+				z++;
+			}
+			else {
+				blocks[z]->x = blocks[z - ilosc_rzedow]->x;
+				blocks[z]->y = blocks[z - ilosc_rzedow]->y - 20;
+
+				blocks[z]->x2 = blocks[z - ilosc_rzedow]->x2;
+				blocks[z]->y2 = blocks[z - ilosc_rzedow]->y2 - 20;
+				z++;
+			}
+		}
+	}
+
+	return blocks;
+}
+
+
+
 
 bool Game::game_loop() {
 
@@ -75,43 +140,7 @@ bool Game::game_loop() {
 	const int ilosc_rzedow = 13;
 	const int n = (ilosc_wierszy * ilosc_rzedow);
 
-	Block* blocks[n];
-
-
-
-	for (int i = 0; i < n; i++)
-	{
-		if (i == 0)
-			blocks[i] = new Block(150);
-		else
-			blocks[i] = new Block();
-	}
-
-	int z = 0;
-	for (int i = 0; i < ilosc_wierszy; i++)
-	{
-		for (int j = 0; j < ilosc_rzedow; j++)
-		{
-			if (i == 0)
-			{
-				blocks[j + 1]->x = blocks[j]->x2;
-				blocks[j + 1]->y = blocks[j]->y2 - 20;
-
-				blocks[j + 1]->x2 = blocks[j + 1]->x + 50;
-				blocks[j + 1]->y2 = blocks[j + 1]->y + 20;
-				z++;
-			}
-			else
-			{
-				blocks[z]->x = blocks[z - ilosc_rzedow]->x;
-				blocks[z]->y = blocks[z - ilosc_rzedow]->y - 20;
-
-				blocks[z]->x2 = blocks[z - ilosc_rzedow]->x2;
-				blocks[z]->y2 = blocks[z - ilosc_rzedow]->y2 - 20;
-				z++;
-			}
-		}
-	}
+	Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
 
 
 
@@ -127,29 +156,8 @@ bool Game::game_loop() {
 	int health_z = 2;
 	Block* health[3];
 
-	for (int i = 0; i < 3; i++)
-	{
-		health[i] = new Block();
-	}
+	initializeHealthBlocks(health, health_z);
 
-	for (int i = 0; i < 3; i++)
-	{
-		if (i == 0)
-		{
-			health[i]->x = 10;
-			health[i]->y = 30;
-			health[i]->x2 = 30;
-			health[i]->y2 = 50;
-		}
-		else
-		{
-			health[i]->x = health[i - 1]->x2;
-			health[i]->y = health[i - 1]->y;
-			health[i]->x2 = health[i - 1]->x2 + 20;
-			health[i]->y2 = health[i - 1]->y2;
-		}
-
-	}
 	ALLEGRO_MOUSE_CURSOR* cursor = al_create_mouse_cursor(cursorImage, 0, 0);
 	al_set_mouse_cursor(display, cursor);
 
@@ -306,6 +314,10 @@ bool Game::game_loop() {
 
 		if (returnToMenu)
 		{
+			health_z = 2;
+			* health[3];
+			initializeHealthBlocks(health, health_z); //zresetowanie ¿ycia do nowej gry
+			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow); //zresetowanie bloków do nowej gry
 			menu = true;
 			new_game = false;
 			returnToMenu = false; // Zresetowanie wartoœci returnToMenu
