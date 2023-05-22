@@ -8,6 +8,7 @@
 #include <allegro5/allegro_acodec.h>
 #include<math.h>
 #include<iostream>
+#include<string>
 #include<vector>
 #include "Pilka.h"
 #include"Paletka.h"

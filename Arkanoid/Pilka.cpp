@@ -17,7 +17,7 @@ void Pilka::set_speed(int s)
 	vx = vy = speed;
 }
 
-bool Pilka::collision(Pilka* ball, Block* blocks[], int n)
+bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points)
 {
 	for (int i = 0; i < n; i++)
 	{
@@ -38,6 +38,7 @@ bool Pilka::collision(Pilka* ball, Block* blocks[], int n)
 			}
 
 			delete(blocks[i]);
+			ball->points += 10;
 			return true;
 		}
 
@@ -94,7 +95,7 @@ void Pilka::odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* he
 				ball->vy = ball->speed * (-1);
 		}
 	}
-	ball->collision(ball, blocks, n);
+	ball->collision(ball, blocks, n, points);
 
 
 }

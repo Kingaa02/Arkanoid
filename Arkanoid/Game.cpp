@@ -312,15 +312,17 @@ bool Game::game_loop() {
 		if (done)
 			break;
 
+		///reset przed rozpoczêciem nowej gry
 		if (returnToMenu)
 		{
 			health_z = 2;
 			* health[3];
-			initializeHealthBlocks(health, health_z); //zresetowanie ¿ycia do nowej gry
-			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow); //zresetowanie bloków do nowej gry
+			initializeHealthBlocks(health, health_z); 
+			b.points = 0;
+			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow); 
 			menu = true;
 			new_game = false;
-			returnToMenu = false; // Zresetowanie wartoœci returnToMenu
+			returnToMenu = false; 
 		}
 
 
@@ -331,6 +333,7 @@ bool Game::game_loop() {
 
 			///Wyœwietlanie bloków
 
+			string pointsText = to_string(b.points);
 			if (health_z >= 0)
 			{
 				/// Wyœwietlanie pi³ki 
@@ -339,6 +342,10 @@ bool Game::game_loop() {
 				al_draw_filled_rectangle(p.x, p.y, p.x2, p.y2, al_map_rgb(66, 218, 245));
 
 				al_draw_text(font, al_map_rgb(12, 213, 123), 10, 0, 0, "HEALTH");
+				al_draw_text(font, al_map_rgb(12, 213, 123), 910, 0, 0, "POINTS");
+
+				///Wyœwietlanie liczby punktów
+				al_draw_text(font, al_map_rgb(12, 213, 123), 930, 30, 0, pointsText.c_str());
 
 				for (int i = 0; i < n; i++)
 				{
@@ -354,7 +361,10 @@ bool Game::game_loop() {
 			}
 			else
 			{
-				al_draw_text(font2, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + -50, ALLEGRO_ALIGN_CENTER, "GAME OVER");
+				al_draw_text(font2, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + -200, ALLEGRO_ALIGN_CENTER, "GAME OVER");
+				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + -50, ALLEGRO_ALIGN_CENTER, "Total points:");
+				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, pointsText.c_str());
+
 
 				al_draw_filled_rectangle(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, al_map_rgb(66, 218, 245));
 				al_draw_rectangle(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, al_map_rgb(255, 255, 255), 2);
