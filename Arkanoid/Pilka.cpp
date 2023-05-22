@@ -85,10 +85,14 @@ void Pilka::odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* he
 	///Kolizja pi³ki z paletk¹
 	if (ball->y + ball->promien > p->y && ball->y + ball->promien < p->y2)
 	{
-		if (ball->x + ball->promien > p->x && ball->x + ball->promien < p->x2)
+		if ((ball->x + ball->promien > p->x && ball->x + ball->promien < p->x2) ||
+			(ball->x - ball->promien > p->x && ball->x - ball->promien < p->x2))
+		{
 			if (ball->x + ball->promien >= p->x && ball->x + ball->promien <= p->x2)
 				ball->vy = ball->speed * (-1);
-
+			else if (ball->x - ball->promien >= p->x && ball->x - ball->promien <= p->x2)
+				ball->vy = ball->speed * (-1);
+		}
 	}
 	ball->collision(ball, blocks, n);
 
