@@ -133,11 +133,12 @@ bool Game::game_loop() {
 	bool menu = true;
 	bool running = true;
 	bool new_game = false;
+	bool space = false;
 
 	ALLEGRO_EVENT event;
 
-	const int ilosc_wierszy = 6;
-	const int ilosc_rzedow = 13;
+	const int ilosc_wierszy = 8;
+	const int ilosc_rzedow = 19;
 	const int n = (ilosc_wierszy * ilosc_rzedow);
 
 	Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
@@ -167,6 +168,33 @@ bool Game::game_loop() {
 	int buttonWidth = 200; 
 	int buttonHeight = 50; 
 
+	srand(time(NULL));
+
+	// Kolor dla kazdego wiersza
+	vector<ALLEGRO_COLOR> rowColors = {
+		al_map_rgb(255, 0, 0),     
+		al_map_rgb(0, 0, 255),        
+		al_map_rgb(0, 255, 0),   
+		al_map_rgb(255, 165, 0),   
+		al_map_rgb(128, 0, 128),
+		al_map_rgb(255, 255, 0),
+		al_map_rgb(0, 255, 255),    
+		al_map_rgb(255, 20, 147)
+	};
+
+
+	// Randomizacja koloru bloków
+	vector<ALLEGRO_COLOR> blockColors;
+	for (int i = 0; i < ilosc_wierszy; i++)
+	{
+		ALLEGRO_COLOR rowColor = rowColors[i % rowColors.size()];
+
+		for (int j = 0; j < ilosc_rzedow; j++)
+		{
+			blockColors.push_back(rowColor);
+		}
+	}
+
 	while (true && running)
 	{
 		al_wait_for_event(queue, &event);
@@ -184,8 +212,8 @@ bool Game::game_loop() {
 		{
 			al_draw_bitmap(background, 0, 0, 0);
 			al_draw_text(font4, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 230, ALLEGRO_ALIGN_CENTER, "ARKANOID");
-			al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 30, ALLEGRO_ALIGN_CENTER, "Nowa Gra");
-			al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 30, ALLEGRO_ALIGN_CENTER, "Wyjscie");
+			al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 30, ALLEGRO_ALIGN_CENTER, "New Game");
+			al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 30, ALLEGRO_ALIGN_CENTER, "Exit");
 		}
 
 		switch (event.type)
@@ -235,7 +263,8 @@ bool Game::game_loop() {
 			{
 				if (!pressed)
 				{
-					b.set_speed(4);
+					b.set_speed(6);
+					space = true;
 				}
 			}
 
@@ -329,35 +358,43 @@ bool Game::game_loop() {
 		if (redraw && al_is_event_queue_empty(queue) && new_game)
 		{
 			///Odœwie¿anie ekranu
-			al_clear_to_color(al_map_rgb(28, 28, 28));
-
-			///Wyœwietlanie bloków
+			al_draw_bitmap(background, 0, 0, 0);
 
 			string pointsText = to_string(b.points);
 			if (health_z >= 0)
 			{
+				if (!pressed && !space)
+				{
+					al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 20, ALLEGRO_ALIGN_CENTER, "Press 'Space' to start");
+				}
 				/// Wyœwietlanie pi³ki 
-				al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(255, 33, 33));
+				al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(255, 255, 255));
+				al_draw_circle(b.x, b.y, b.promien, al_map_rgb(0, 0, 0), 3);
+
 				/// Wyœwietlanie paletki
-				al_draw_filled_rectangle(p.x, p.y, p.x2, p.y2, al_map_rgb(66, 218, 245));
+				al_draw_filled_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(255, 0, 0));
+				al_draw_rectangle(p.x,p.y,p.x2,p.y2 - 5, al_map_rgb(9,0,0), 3);
 
 				al_draw_text(font, al_map_rgb(12, 213, 123), 10, 0, 0, "HEALTH");
 				al_draw_text(font, al_map_rgb(12, 213, 123), 910, 0, 0, "POINTS");
 
 				///Wyœwietlanie liczby punktów
 				al_draw_text(font, al_map_rgb(12, 213, 123), 930, 30, 0, pointsText.c_str());
-
+				
+				// Wyœwietlanie bloków do zbijania
 				for (int i = 0; i < n; i++)
 				{
-					al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(245, 102, 66));
-					al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(255, 255, 255), 2);
+					al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
+					al_draw_rectangle(blocks[i]->x , blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
 				}
 
+				//Wyswietlanie blokow zycia
 				for (int i = 0; i < 3; i++)
 				{
 					al_draw_filled_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(12, 213, 123));
-					al_draw_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(255, 255, 255), 2);
+					al_draw_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(0, 0, 0), 3);
 				}
+
 			}
 			else
 			{

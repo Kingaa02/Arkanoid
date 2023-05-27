@@ -1,4 +1,5 @@
-#include "Pilka.h"
+ï»¿#include "Pilka.h"
+#include <cmath>
 
 Pilka::Pilka()
 {
@@ -8,7 +9,7 @@ Pilka::Pilka()
 	vx = speed;
 	vy = speed;
 
-	promien = 15;
+	promien = 10;
 }
 
 void Pilka::set_speed(int s)
@@ -21,13 +22,13 @@ bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points)
 {
 	for (int i = 0; i < n; i++)
 	{
-		///Sprawdzenie czy pi³ka dotknê³a bloku
+		///Sprawdzenie czy piÂ³ka dotknÃªÂ³a bloku
 		if (ball->x + ball->promien >= blocks[i]->x &&
 			ball->x - ball->promien <= blocks[i]->x2 &&
 			ball->y + ball->promien >= blocks[i]->y &&
 			ball->y - ball->promien <= blocks[i]->y2)
 		{
-			///Sprawdzenie z której strony blok zostal dotkniêty góra/dó³/lewo/prawo
+			///Sprawdzenie z ktÃ³rej strony blok zostal dotkniÃªty gÃ³ra/dÃ³Â³/lewo/prawo
 			if (ball->x < blocks[i]->x || ball->x > blocks[i]->x2)
 			{
 				ball->vx *= (-1);
@@ -47,23 +48,25 @@ bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points)
 	return false;
 }
 
+
 void Pilka::odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* health[], int* z)
 {
+
 	ball->x += ball->vx;
 	ball->y += ball->vy;
 
-	///Kolizja pi³ki z lew¹ stron¹ ekranu
+	///Kolizja piÂ³ki z lewÂ¹ stronÂ¹ ekranu
 	if (ball->x - ball->promien <= 0)
 	{
 		ball->vx *= (-1);
 	}
 
-	///Kolizja pi³ki z praw¹ stron¹ ekranu
+	///Kolizja piÂ³ki z prawÂ¹ stronÂ¹ ekranu
 	if (ball->x + ball->promien >= SCREEN_WIDTH)
 	{
 		ball->vx *= (-1);
 	}
-	///Kolizja pi³ki z do³em stron¹ ekranu
+	///Kolizja piÂ³ki z doÂ³em stronÂ¹ ekranu
 	if (ball->y + ball->promien >= SCREEN_HEIGHT)
 	{
 		ball->x = SCREEN_WIDTH / 2 - 50;
@@ -76,27 +79,37 @@ void Pilka::odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* he
 		}
 
 	}
-	///Kolizja pi³ki z gór¹ stron¹ ekranu
+	///Kolizja piÂ³ki z gÃ³rÂ¹ stronÂ¹ ekranu
 	if (ball->y - ball->promien <= 0)
 	{
 		ball->vy *= (-1);
 	}
 
 
-	///Kolizja pi³ki z paletk¹
+
+	// Kolizja piÅ‚ki z paletkÄ…
 	if (ball->y + ball->promien > p->y && ball->y + ball->promien < p->y2)
 	{
 		if ((ball->x + ball->promien > p->x && ball->x + ball->promien < p->x2) ||
-			(ball->x - ball->promien > p->x && ball->x - ball->promien < p->x2))
+			(ball->x - ball->promien > p->x && ball->x - ball->promien < p->x2) ||
+			(ball->x + ball->promien > p->x2 && ball->x - ball->promien < p->x))
 		{
-			if (ball->x + ball->promien >= p->x && ball->x + ball->promien <= p->x2) //warunek sprawdzaj¹cy kolizjê na rogach paletki
-				ball->vy = ball->speed * (-1);
-			else if (ball->x - ball->promien >= p->x && ball->x - ball->promien <= p->x2)
-				ball->vy = ball->speed * (-1);
+
+			// Obliczanie wzglÄ™dnego poÅ‚oÅ¼enia piÅ‚ki na paletce
+			float relativePosition = (ball->x - p->x) / p->width;
+
+			// Dostosowanie kÄ…ta odbicia na podstawie wzglÄ™dnej pozycji
+			const float maxReflectionAngle = 60.0f;  // Maksymalny kÄ…t odbicia w stopniach
+			float reflectionAngle = relativePosition * (2 * maxReflectionAngle) - maxReflectionAngle;
+			float reflectionRadians = reflectionAngle * 3.14159f / 180.0f;
+
+			// Aktualizowanie prÄ™dkoÅ›ci piÅ‚ki na podstawie kÄ…ta odbicia, zachowujÄ…c prÄ™dkoÅ›Ä‡
+			float currentSpeed = sqrt(ball->vx * ball->vx + ball->vy * ball->vy);
+			ball->vx = currentSpeed * sin(reflectionRadians);
+			ball->vy = -currentSpeed * cos(reflectionRadians);
 		}
 	}
 	ball->collision(ball, blocks, n, points);
-
 
 }
 
