@@ -134,6 +134,8 @@ bool Game::game_loop() {
 	bool running = true;
 	bool new_game = false;
 	bool space = false;
+	bool level2Clicked = false;
+	int level = 1;
 
 	ALLEGRO_EVENT event;
 
@@ -326,6 +328,15 @@ bool Game::game_loop() {
 				{
 					returnToMenu = true;
 				}
+
+				// Obs³uga przycisku "LEVEL 2"
+				if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
+					event.mouse.y >= buttonY + 60 && event.mouse.y <= buttonY + buttonHeight + 60)
+				{
+					level2Clicked = true;
+					level = 2;
+				}
+
 			}
 			break;
 
@@ -355,6 +366,18 @@ bool Game::game_loop() {
 			returnToMenu = false;
 		}
 
+		if (level2Clicked)
+		{
+			health_z = 2;
+			*health[3];
+			initializeHealthBlocks(health, health_z);
+			b.blocksDestroyed = 0;
+			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
+			menu = false;
+			new_game = true;
+			level2Clicked = false; // Zresetowanie wartoœci level2Clicked
+		}
+
 
 
 
@@ -364,6 +387,8 @@ bool Game::game_loop() {
 			al_draw_bitmap(background, 0, 0, 0);
 
 			string pointsText = to_string(b.points);
+			string levelText = to_string(level);
+
 			if ((health_z >= 0) && (b.blocksDestroyed < ilosc_rzedow * ilosc_wierszy))
 			{
 				if (!pressed && !space)
@@ -379,12 +404,17 @@ bool Game::game_loop() {
 				al_draw_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(9, 0, 0), 3);
 
 				al_draw_text(font, al_map_rgb(12, 213, 123), 10, 0, 0, "HEALTH");
+				al_draw_text(font, al_map_rgb(12, 213, 123), 450, 0, 0, "LEVEL");
 				al_draw_text(font, al_map_rgb(12, 213, 123), 910, 0, 0, "POINTS");
 
 				///Wyœwietlanie liczby punktów
 				al_draw_text(font, al_map_rgb(12, 213, 123), 930, 30, 0, pointsText.c_str());
 
+				///Wyœwietlanie poziomu
+				al_draw_text(font, al_map_rgb(12, 213, 123), 465, 30, 0, levelText.c_str());
+
 				// Wyœwietlanie bloków do zbijania
+		
 				for (int i = 0; i < n; i++)
 				{
 					al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
@@ -419,6 +449,24 @@ bool Game::game_loop() {
 					}
 				}
 
+				al_draw_filled_rectangle(buttonX, buttonY + 60, buttonX + buttonWidth, buttonY + buttonHeight + 60, al_map_rgb(66, 218, 245));
+				al_draw_rectangle(buttonX, buttonY + 60, buttonX + buttonWidth, buttonY + buttonHeight + 60, al_map_rgb(255, 255, 255), 2);
+				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 215, ALLEGRO_ALIGN_CENTER, "Level 2");
+
+				if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button & 1)
+				{
+					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
+						event.mouse.y >= buttonY + 60 && event.mouse.y <= buttonY + buttonHeight + 60)
+					{
+						level = 2;
+						level2Clicked = true;
+						new_game = false;
+
+						
+					}
+				}
+
+
 			}
 			else
 			{
@@ -442,6 +490,7 @@ bool Game::game_loop() {
 					}
 				}
 			}
+
 
 
 			redraw = false;
