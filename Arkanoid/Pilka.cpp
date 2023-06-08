@@ -40,6 +40,7 @@ bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points)
 
 			delete(blocks[i]);
 			ball->points += 10;
+			ball->blocksDestroyed += 1;
 			return true;
 		}
 

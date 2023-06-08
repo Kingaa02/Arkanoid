@@ -13,6 +13,7 @@ public:
 	float vx, vy;
 	float speed;
 	int points = 0;
+	int blocksDestroyed = 0;
 
 
 	Pilka();

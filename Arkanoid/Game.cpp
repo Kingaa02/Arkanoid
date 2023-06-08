@@ -263,7 +263,7 @@ bool Game::game_loop() {
 			{
 				if (!pressed)
 				{
-					b.set_speed(6);
+					b.set_speed(4);
 					space = true;
 				}
 			}
@@ -345,14 +345,17 @@ bool Game::game_loop() {
 		if (returnToMenu)
 		{
 			health_z = 2;
-			* health[3];
-			initializeHealthBlocks(health, health_z); 
+			*health[3];
+			initializeHealthBlocks(health, health_z);
+			b.blocksDestroyed = 0;
 			b.points = 0;
-			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow); 
+			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
 			menu = true;
 			new_game = false;
-			returnToMenu = false; 
+			returnToMenu = false;
 		}
+
+
 
 
 		if (redraw && al_is_event_queue_empty(queue) && new_game)
@@ -361,7 +364,7 @@ bool Game::game_loop() {
 			al_draw_bitmap(background, 0, 0, 0);
 
 			string pointsText = to_string(b.points);
-			if (health_z >= 0)
+			if ((health_z >= 0) && (b.blocksDestroyed < ilosc_rzedow * ilosc_wierszy))
 			{
 				if (!pressed && !space)
 				{
@@ -373,19 +376,19 @@ bool Game::game_loop() {
 
 				/// Wyœwietlanie paletki
 				al_draw_filled_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(255, 0, 0));
-				al_draw_rectangle(p.x,p.y,p.x2,p.y2 - 5, al_map_rgb(9,0,0), 3);
+				al_draw_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(9, 0, 0), 3);
 
 				al_draw_text(font, al_map_rgb(12, 213, 123), 10, 0, 0, "HEALTH");
 				al_draw_text(font, al_map_rgb(12, 213, 123), 910, 0, 0, "POINTS");
 
 				///Wyœwietlanie liczby punktów
 				al_draw_text(font, al_map_rgb(12, 213, 123), 930, 30, 0, pointsText.c_str());
-				
+
 				// Wyœwietlanie bloków do zbijania
 				for (int i = 0; i < n; i++)
 				{
 					al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
-					al_draw_rectangle(blocks[i]->x , blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
+					al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
 				}
 
 				//Wyswietlanie blokow zycia
@@ -393,6 +396,27 @@ bool Game::game_loop() {
 				{
 					al_draw_filled_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(12, 213, 123));
 					al_draw_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(0, 0, 0), 3);
+				}
+
+			}
+			else if (b.blocksDestroyed == ilosc_rzedow * ilosc_wierszy) {
+				al_draw_text(font2, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 200, ALLEGRO_ALIGN_CENTER, "YOU WIN");
+				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50, ALLEGRO_ALIGN_CENTER, "Total points:");
+				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, pointsText.c_str());
+
+				al_draw_filled_rectangle(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, al_map_rgb(66, 218, 245));
+				al_draw_rectangle(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, al_map_rgb(255, 255, 255), 2);
+				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 155, ALLEGRO_ALIGN_CENTER, "Menu");
+
+				if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button & 1)
+				{
+					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
+						event.mouse.y >= buttonY && event.mouse.y <= buttonY + buttonHeight)
+					{
+						menu = true;
+						new_game = false;
+						returnToMenu = false; // Zresetowanie wartoœci returnToMenu
+					}
 				}
 
 			}
@@ -419,10 +443,11 @@ bool Game::game_loop() {
 				}
 			}
 
+
 			redraw = false;
 		}
 		al_flip_display();
-}
+	}
 
 	al_destroy_display(display);
 	al_destroy_timer(timer);
@@ -435,3 +460,6 @@ bool Game::game_loop() {
 	return 1;
 
 }
+	
+
+		
