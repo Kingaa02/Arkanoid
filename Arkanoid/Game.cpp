@@ -1,15 +1,15 @@
-#include "Game.h"
+ï»¿#include "Game.h"
 
 float x, y;
 
-void Game::sprawdzenie_init(bool test, string opis){
+void Game::sprawdzenie_init(bool test, string opis) {
 	if (test)
 		return;
 
 	cout << "Nie udalo sie uruchomic " << opis << endl;
 }
 
-//Inicjalizacja ¿ycia
+//Inicjalizacja Â¿ycia
 void initializeHealthBlocks(Block* health[], int health_z)
 {
 	for (int i = 0; i < 3; i++)
@@ -36,39 +36,37 @@ void initializeHealthBlocks(Block* health[], int health_z)
 	}
 }
 
-//Inicjalizacja bloków
 Block** createBlocks(int n, int ilosc_wierszy, int ilosc_rzedow, bool level2Clicked) {
 	Block** blocks = new Block * [n];
 
-
-		for (int i = 0; i < n; i++) {
-			if (i == 0)
-				blocks[i] = new Block(150);
-			else
-				blocks[i] = new Block();
+	for (int i = 0; i < n; i++) {
+		if (i == 0) {
+			blocks[i] = new Block(290);
 		}
+		else {
+			blocks[i] = new Block();
+		}
+	}
 
-		int z = 0;
-		for (int i = 0; i < ilosc_wierszy; i++) {
-			for (int j = 0; j < ilosc_rzedow; j++) {
-				if (i == 0) {
-					blocks[j + 1]->x = blocks[j]->x2;
-					blocks[j + 1]->y = blocks[j]->y2 - 20;
-
-					blocks[j + 1]->x2 = blocks[j + 1]->x + 50;
-					blocks[j + 1]->y2 = blocks[j + 1]->y + 20;
-					z++;
-				}
-				else {
-					blocks[z]->x = blocks[z - ilosc_rzedow]->x;
-					blocks[z]->y = blocks[z - ilosc_rzedow]->y - 20;
-
-					blocks[z]->x2 = blocks[z - ilosc_rzedow]->x2;
-					blocks[z]->y2 = blocks[z - ilosc_rzedow]->y2 - 20;
-					z++;
-				}
+	int z = 0;
+	for (int i = 0; i < ilosc_wierszy; i++) {
+		for (int j = 0; j < ilosc_rzedow; j++) {
+			if (i == 0) {
+				blocks[j + 1]->x = blocks[j]->x2;
+				blocks[j + 1]->y = blocks[j]->y2 - 20;
+				blocks[j + 1]->x2 = blocks[j + 1]->x + 65;
+				blocks[j + 1]->y2 = blocks[j + 1]->y + 20;
+				z++;
+			}
+			else {
+				blocks[z]->x = blocks[z - ilosc_rzedow]->x;
+				blocks[z]->y = blocks[z - ilosc_rzedow]->y - 20;
+				blocks[z]->x2 = blocks[z - ilosc_rzedow]->x2;
+				blocks[z]->y2 = blocks[z - ilosc_rzedow]->y2 - 20;
+				z++;
 			}
 		}
+	}
 
 	return blocks;
 }
@@ -139,12 +137,11 @@ bool Game::game_loop() {
 	bool new_game = false;
 	bool space = false;
 	bool level2Clicked = false;
-	int level = 1;
 
 	ALLEGRO_EVENT event;
 
-	const int ilosc_wierszy = 6;
-	const int ilosc_rzedow = 19;
+	const int ilosc_wierszy = 4;
+	const int ilosc_rzedow = 10;
 	const int n = (ilosc_wierszy * ilosc_rzedow);
 
 	Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
@@ -169,38 +166,23 @@ bool Game::game_loop() {
 	al_set_mouse_cursor(display, cursor);
 
 	bool returnToMenu = false;
-	int buttonX = SCREEN_WIDTH / 2 - 100; 
-	int buttonY = SCREEN_HEIGHT / 2 + 150; 
-	int buttonWidth = 200; 
-	int buttonHeight = 50; 
+	int buttonX = SCREEN_WIDTH / 2 - 100;
+	int buttonY = SCREEN_HEIGHT / 2 + 150;
+	int buttonWidth = 200;
+	int buttonHeight = 50;
 
 	srand(time(NULL));
 
-	// Kolor dla kazdego wiersza
-	vector<ALLEGRO_COLOR> rowColors = {
-		al_map_rgb(204, 0, 0),
-		al_map_rgb(12, 213, 123),
-	};
-
-
-	// Randomizacja koloru bloków
-		vector<ALLEGRO_COLOR> blockColors;
-		for (int i = 0; i < ilosc_wierszy; i++)
-		{
-			ALLEGRO_COLOR rowColor = rowColors[i % rowColors.size()];
-
-				for (int j = 0; j < ilosc_rzedow; j++)
-				{
-					if (j%2 !=0)
-					{
-						blockColors.push_back(rowColor);
-					}
-					else
-					{
-						blockColors.push_back(rowColor);
-					}
-				}
-			}
+	// Randomizacja koloru blokÃ³w
+	vector<ALLEGRO_COLOR> blockColors;
+	for (int i = 0; i < ilosc_wierszy; i++)
+	{
+    for (int j = 0; j < ilosc_rzedow; j++)
+    {
+        ALLEGRO_COLOR randomColor = al_map_rgb(rand() % 256, rand() % 100, rand() % 256);
+        blockColors.push_back(randomColor);
+    }
+}
 
 	while (true && running)
 	{
@@ -226,14 +208,14 @@ bool Game::game_loop() {
 		switch (event.type)
 		{
 		case ALLEGRO_EVENT_TIMER:
-			///Poruszanie siê pi³ki
+			///Poruszanie siÃª piÂ³ki
 			b.odbijanie(&b, &p, blocks, n, health, &health_z);
 
 
 			/// Poruszanie paletki
 			if (right)
 			{
-				/// Ograniczenie ruchu paletki na szerokoœæ ekranu z prawej strony
+				/// Ograniczenie ruchu paletki na szerokoÅ“Ã¦ ekranu z prawej strony
 				if (p.x < SCREEN_WIDTH && p.x2 < SCREEN_WIDTH)
 				{
 					p.x += p.dx;
@@ -244,7 +226,7 @@ bool Game::game_loop() {
 
 			if (left)
 			{
-				/// Ograniczenie ruchu paletki na szerokoœæ ekranu z prawej strony
+				/// Ograniczenie ruchu paletki na szerokoÅ“Ã¦ ekranu z prawej strony
 				if (p.x > 0 && p.x2 > 0)
 				{
 					p.x -= p.dx;
@@ -257,7 +239,7 @@ bool Game::game_loop() {
 
 			/// Poruszanie paletki wykrywanie kierunku 
 		case ALLEGRO_EVENT_KEY_DOWN:
-			/// Wykrywanie wciœniêcia przycisku  
+			/// Wykrywanie wciÅ“niÃªcia przycisku  
 			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT)
 				right = true;
 
@@ -265,14 +247,18 @@ bool Game::game_loop() {
 				left = true;
 
 
-			/// Wyrzucenie pi³ki
-				if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
+			/// Wyrzucenie piÂ³ki
+			if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
+			{
+				if (b.level == 1)
 				{
-					if (!pressed || level2Clicked) 
-					{
-						b.set_speed(6);
-						space = true;
-					}
+					b.set_speed(4);
+				}
+				else if (b.level == 2)
+				{
+					b.set_speed(7);
+				}
+				space = true;
 			}
 
 			break;
@@ -313,34 +299,37 @@ bool Game::game_loop() {
 				{
 					menu = false;
 					new_game = true;
+					b.set_speed(0);
+					b.x = SCREEN_WIDTH / 2 - 50;
+					b.y = SCREEN_HEIGHT / 2;
 				}
 
 				if (!new_game)
 				{
-					// Wyjœcie
+					// WyjÅ“cie
 					if (event.mouse.x > SCREEN_WIDTH / 2 - 65 && event.mouse.x < SCREEN_WIDTH / 2 + 55 && event.mouse.y > SCREEN_HEIGHT / 2 + 30 && event.mouse.y < SCREEN_HEIGHT / 2 + 70)
 					{
 						menu = false;
 						running = false;
-						done = true; // Poprawka: Przypisanie wartoœci true do zmiennej done
+						done = true; // Poprawka: Przypisanie wartoÅ“ci true do zmiennej done
 					}
 				}
 
-				// Powrót do menu
+				// PowrÃ³t do menu
 				if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
 					event.mouse.y >= buttonY && event.mouse.y <= buttonY + buttonHeight)
 				{
 					returnToMenu = true;
 				}
 
-				// Obs³uga przycisku "LEVEL 2"
-				if (level != 2)
+				// ObsÂ³uga przycisku "LEVEL 2"
+				if (b.level != 2)
 				{
 					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
 						event.mouse.y >= buttonY + 60 && event.mouse.y <= buttonY + buttonHeight + 60)
 					{
 						level2Clicked = true;
-						level = 2;
+						b.level = 2;
 						new_game = true;
 					}
 				}
@@ -360,7 +349,7 @@ bool Game::game_loop() {
 		if (done)
 			break;
 
-		///reset przed rozpoczêciem nowej gry
+		///reset przed rozpoczÃªciem nowej gry
 		if (returnToMenu)
 		{
 			health_z = 2;
@@ -373,7 +362,7 @@ bool Game::game_loop() {
 			new_game = false;
 			returnToMenu = false;
 			level2Clicked = false;
-			level = 1;
+			b.level = 1;
 		}
 
 
@@ -386,6 +375,7 @@ bool Game::game_loop() {
 			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
 			menu = false;
 			new_game = true;
+			level2Clicked = false; // Zresetowanie wartoÅ“ci level2Clicked
 			b.set_speed(0);
 			b.x = SCREEN_WIDTH / 2 - 50;
 			b.y = SCREEN_HEIGHT / 2;
@@ -397,11 +387,11 @@ bool Game::game_loop() {
 
 		if (redraw && al_is_event_queue_empty(queue) && new_game)
 		{
-			///Odœwie¿anie ekranu
+			///OdÅ“wieÂ¿anie ekranu
 			al_draw_bitmap(background2, 0, 0, 0);
 
 			string pointsText = to_string(b.points);
-			string levelText = to_string(level);
+			string levelText = to_string(b.level);
 
 			if ((health_z >= 0) && (b.blocksDestroyed < ilosc_rzedow * ilosc_wierszy))
 			{
@@ -409,11 +399,11 @@ bool Game::game_loop() {
 				{
 					al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 20, ALLEGRO_ALIGN_CENTER, "Press 'Space' to start");
 				}
-				/// Wyœwietlanie pi³ki 
+				/// WyÅ“wietlanie piÂ³ki 
 				al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(255, 255, 255));
 				al_draw_circle(b.x, b.y, b.promien, al_map_rgb(0, 0, 0), 3);
 
-				/// Wyœwietlanie paletki
+				/// WyÅ“wietlanie paletki
 				al_draw_filled_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(255, 0, 0));
 				al_draw_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(9, 0, 0), 3);
 
@@ -421,25 +411,32 @@ bool Game::game_loop() {
 				al_draw_text(font, al_map_rgb(0, 255, 0), 450, 0, 0, "LEVEL");
 				al_draw_text(font, al_map_rgb(0, 255, 0), 910, 0, 0, "POINTS");
 
-				///Wyœwietlanie liczby punktów
-				al_draw_text(font, al_map_rgb(0,255,0), 930, 30, 0, pointsText.c_str());
+				///WyÅ“wietlanie liczby punktÃ³w
+				al_draw_text(font, al_map_rgb(0, 255, 0), 930, 30, 0, pointsText.c_str());
 
-				///Wyœwietlanie poziomu
-				al_draw_text(font, al_map_rgb(0,255,0), 465, 30, 0, levelText.c_str());
+				///WyÅ“wietlanie poziomu
+				al_draw_text(font, al_map_rgb(0, 255, 0), 465, 30, 0, levelText.c_str());
 
-				// Wyœwietlanie bloków do zbijania
-		
+				// WyÅ“wietlanie blokÃ³w do zbijania
+
 				for (int i = 0; i < n; i++)
 				{
-					if (level2Clicked)
+					if (b.level == 2)
 					{
-						al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
-						al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
+						if (blocks[i]->getHitCount() == 0)
+						{
+							al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
+							al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
+						}
+						else if(blocks[i]->getHitCount() == 1)
+						{
+							al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 255, 0));
+							al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
+						}
 					}
-					else if (!level2Clicked)
+					else if (b.level != 2)
 					{
-						Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
-						al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(12, 213, 123));
+						al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 255, 0));
 						al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
 					}
 				}
@@ -467,14 +464,14 @@ bool Game::game_loop() {
 						event.mouse.y >= buttonY && event.mouse.y <= buttonY + buttonHeight)
 					{
 						menu = true;
-						level = 1;
+						b.level = 1;
 						level2Clicked = false;
 						new_game = true;
-						returnToMenu = false; // Zresetowanie wartoœci returnToMenu
+						returnToMenu = false; // Zresetowanie wartoÅ“ci returnToMenu
 					}
 				}
 
-				if (level != 2)
+				if (b.level != 2)
 				{
 					al_draw_filled_rectangle(buttonX, buttonY + 60, buttonX + buttonWidth, buttonY + buttonHeight + 60, al_map_rgb(66, 218, 245));
 					al_draw_rectangle(buttonX, buttonY + 60, buttonX + buttonWidth, buttonY + buttonHeight + 60, al_map_rgb(255, 255, 255), 2);
@@ -499,10 +496,9 @@ bool Game::game_loop() {
 					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
 						event.mouse.y >= buttonY && event.mouse.y <= buttonY + buttonHeight)
 					{
-						level2Clicked = false;
 						menu = true;
 						new_game = false;
-						returnToMenu = false; // Zresetowanie wartoœci returnToMenu
+						returnToMenu = false; // Zresetowanie wartoÅ“ci returnToMenu
 					}
 				}
 			}

@@ -18,7 +18,9 @@ void Pilka::set_speed(int s)
 	vx = vy = speed;
 }
 
-bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points)
+
+
+bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points, int level)
 {
 	for (int i = 0; i < n; i++)
 	{
@@ -28,6 +30,8 @@ bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points)
 			ball->y + ball->promien >= blocks[i]->y &&
 			ball->y - ball->promien <= blocks[i]->y2)
 		{
+			blocks[i]->setHitCount(blocks[i]->getHitCount() + 1);
+
 			///Sprawdzenie z której strony blok zostal dotkniêty góra/dó³/lewo/prawo
 			if (ball->x < blocks[i]->x || ball->x > blocks[i]->x2)
 			{
@@ -38,9 +42,24 @@ bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points)
 				ball->vy *= (-1);
 			}
 
-			delete(blocks[i]);
-			ball->points += 10;
-			ball->blocksDestroyed += 1;
+			if (ball->level == 1)
+			{
+					delete(blocks[i]);
+					ball->points += 10;
+					ball->blocksDestroyed += 1;
+			}
+			else if (ball->level == 2)
+			{
+				if (blocks[i]->getHitCount() >= 2)
+				{
+					delete(blocks[i]);
+					ball->points += 10;
+					ball->blocksDestroyed += 1;
+					blocks[i]->setHitCount(0);
+				}
+			}
+
+	
 			return true;
 		}
 
@@ -110,7 +129,7 @@ void Pilka::odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* he
 			ball->vy = -currentSpeed * cos(reflectionRadians);
 		}
 	}
-	ball->collision(ball, blocks, n, points);
+	ball->collision(ball, blocks, n, points, level);
 
 }
 

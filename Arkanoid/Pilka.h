@@ -14,15 +14,18 @@ public:
 	float speed;
 	int points = 0;
 	int blocksDestroyed = 0;
+	int level = 1;
 
 
 	Pilka();
 
 	void set_speed(int s);
 
-	bool collision(Pilka* ball, Block* blocks[], int n, int points);
+	bool collision(Pilka* ball, Block* blocks[], int n, int points, int level);
 
 	void odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* health[], int* z);
+
+
 
 
 };
