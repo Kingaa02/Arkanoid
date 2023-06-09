@@ -37,37 +37,38 @@ void initializeHealthBlocks(Block* health[], int health_z)
 }
 
 //Inicjalizacja bloków
-Block** createBlocks(int n, int ilosc_wierszy, int ilosc_rzedow) {
+Block** createBlocks(int n, int ilosc_wierszy, int ilosc_rzedow, bool level2Clicked) {
 	Block** blocks = new Block * [n];
 
-	for (int i = 0; i < n; i++) {
-		if (i == 0)
-			blocks[i] = new Block(150);
-		else
-			blocks[i] = new Block();
-	}
 
-	int z = 0;
-	for (int i = 0; i < ilosc_wierszy; i++) {
-		for (int j = 0; j < ilosc_rzedow; j++) {
-			if (i == 0) {
-				blocks[j + 1]->x = blocks[j]->x2;
-				blocks[j + 1]->y = blocks[j]->y2 - 20;
+		for (int i = 0; i < n; i++) {
+			if (i == 0)
+				blocks[i] = new Block(150);
+			else
+				blocks[i] = new Block();
+		}
 
-				blocks[j + 1]->x2 = blocks[j + 1]->x + 50;
-				blocks[j + 1]->y2 = blocks[j + 1]->y + 20;
-				z++;
-			}
-			else {
-				blocks[z]->x = blocks[z - ilosc_rzedow]->x;
-				blocks[z]->y = blocks[z - ilosc_rzedow]->y - 20;
+		int z = 0;
+		for (int i = 0; i < ilosc_wierszy; i++) {
+			for (int j = 0; j < ilosc_rzedow; j++) {
+				if (i == 0) {
+					blocks[j + 1]->x = blocks[j]->x2;
+					blocks[j + 1]->y = blocks[j]->y2 - 20;
 
-				blocks[z]->x2 = blocks[z - ilosc_rzedow]->x2;
-				blocks[z]->y2 = blocks[z - ilosc_rzedow]->y2 - 20;
-				z++;
+					blocks[j + 1]->x2 = blocks[j + 1]->x + 50;
+					blocks[j + 1]->y2 = blocks[j + 1]->y + 20;
+					z++;
+				}
+				else {
+					blocks[z]->x = blocks[z - ilosc_rzedow]->x;
+					blocks[z]->y = blocks[z - ilosc_rzedow]->y - 20;
+
+					blocks[z]->x2 = blocks[z - ilosc_rzedow]->x2;
+					blocks[z]->y2 = blocks[z - ilosc_rzedow]->y2 - 20;
+					z++;
+				}
 			}
 		}
-	}
 
 	return blocks;
 }
@@ -105,6 +106,9 @@ bool Game::game_loop() {
 	ALLEGRO_BITMAP* background = al_load_bitmap("background.png");
 	sprawdzenie_init(background, "background");
 
+	ALLEGRO_BITMAP* background2 = al_load_bitmap("background2.png");
+	sprawdzenie_init(background, "background2");
+
 	//KURSOR
 	ALLEGRO_BITMAP* cursorImage = al_load_bitmap("cursor.png");
 	ALLEGRO_MOUSE_STATE mouseState;
@@ -139,11 +143,11 @@ bool Game::game_loop() {
 
 	ALLEGRO_EVENT event;
 
-	const int ilosc_wierszy = 8;
+	const int ilosc_wierszy = 6;
 	const int ilosc_rzedow = 19;
 	const int n = (ilosc_wierszy * ilosc_rzedow);
 
-	Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
+	Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
 
 
 
@@ -174,28 +178,29 @@ bool Game::game_loop() {
 
 	// Kolor dla kazdego wiersza
 	vector<ALLEGRO_COLOR> rowColors = {
-		al_map_rgb(255, 0, 0),     
-		al_map_rgb(0, 0, 255),        
-		al_map_rgb(0, 255, 0),   
-		al_map_rgb(255, 165, 0),   
-		al_map_rgb(128, 0, 128),
-		al_map_rgb(255, 255, 0),
-		al_map_rgb(0, 255, 255),    
-		al_map_rgb(255, 20, 147)
+		al_map_rgb(204, 0, 0),
+		al_map_rgb(12, 213, 123),
 	};
 
 
 	// Randomizacja koloru bloków
-	vector<ALLEGRO_COLOR> blockColors;
-	for (int i = 0; i < ilosc_wierszy; i++)
-	{
-		ALLEGRO_COLOR rowColor = rowColors[i % rowColors.size()];
-
-		for (int j = 0; j < ilosc_rzedow; j++)
+		vector<ALLEGRO_COLOR> blockColors;
+		for (int i = 0; i < ilosc_wierszy; i++)
 		{
-			blockColors.push_back(rowColor);
-		}
-	}
+			ALLEGRO_COLOR rowColor = rowColors[i % rowColors.size()];
+
+				for (int j = 0; j < ilosc_rzedow; j++)
+				{
+					if (j%2 !=0)
+					{
+						blockColors.push_back(rowColor);
+					}
+					else
+					{
+						blockColors.push_back(rowColor);
+					}
+				}
+			}
 
 	while (true && running)
 	{
@@ -261,15 +266,14 @@ bool Game::game_loop() {
 
 
 			/// Wyrzucenie pi³ki
-			if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
-			{
-				if (!pressed)
+				if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
 				{
-					b.set_speed(4);
-					space = true;
-				}
+					if (!pressed || level2Clicked) 
+					{
+						b.set_speed(6);
+						space = true;
+					}
 			}
-
 
 			break;
 			/// Wykrywanie puszczenia przycisku
@@ -330,11 +334,15 @@ bool Game::game_loop() {
 				}
 
 				// Obs³uga przycisku "LEVEL 2"
-				if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
-					event.mouse.y >= buttonY + 60 && event.mouse.y <= buttonY + buttonHeight + 60)
+				if (level != 2)
 				{
-					level2Clicked = true;
-					level = 2;
+					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
+						event.mouse.y >= buttonY + 60 && event.mouse.y <= buttonY + buttonHeight + 60)
+					{
+						level2Clicked = true;
+						level = 2;
+						new_game = true;
+					}
 				}
 
 			}
@@ -360,11 +368,14 @@ bool Game::game_loop() {
 			initializeHealthBlocks(health, health_z);
 			b.blocksDestroyed = 0;
 			b.points = 0;
-			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
+			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
 			menu = true;
 			new_game = false;
 			returnToMenu = false;
+			level2Clicked = false;
+			level = 1;
 		}
+
 
 		if (level2Clicked)
 		{
@@ -372,10 +383,14 @@ bool Game::game_loop() {
 			*health[3];
 			initializeHealthBlocks(health, health_z);
 			b.blocksDestroyed = 0;
-			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
+			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
 			menu = false;
 			new_game = true;
 			level2Clicked = false; // Zresetowanie wartoœci level2Clicked
+			b.set_speed(0);
+			b.x = SCREEN_WIDTH / 2 - 50;
+			b.y = SCREEN_HEIGHT / 2;
+
 		}
 
 
@@ -384,7 +399,7 @@ bool Game::game_loop() {
 		if (redraw && al_is_event_queue_empty(queue) && new_game)
 		{
 			///Odœwie¿anie ekranu
-			al_draw_bitmap(background, 0, 0, 0);
+			al_draw_bitmap(background2, 0, 0, 0);
 
 			string pointsText = to_string(b.points);
 			string levelText = to_string(level);
@@ -403,28 +418,29 @@ bool Game::game_loop() {
 				al_draw_filled_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(255, 0, 0));
 				al_draw_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(9, 0, 0), 3);
 
-				al_draw_text(font, al_map_rgb(12, 213, 123), 10, 0, 0, "HEALTH");
-				al_draw_text(font, al_map_rgb(12, 213, 123), 450, 0, 0, "LEVEL");
-				al_draw_text(font, al_map_rgb(12, 213, 123), 910, 0, 0, "POINTS");
+				al_draw_text(font, al_map_rgb(0, 255, 0), 10, 0, 0, "HEALTH");
+				al_draw_text(font, al_map_rgb(0, 255, 0), 450, 0, 0, "LEVEL");
+				al_draw_text(font, al_map_rgb(0, 255, 0), 910, 0, 0, "POINTS");
 
 				///Wyœwietlanie liczby punktów
-				al_draw_text(font, al_map_rgb(12, 213, 123), 930, 30, 0, pointsText.c_str());
+				al_draw_text(font, al_map_rgb(0,255,0), 930, 30, 0, pointsText.c_str());
 
 				///Wyœwietlanie poziomu
-				al_draw_text(font, al_map_rgb(12, 213, 123), 465, 30, 0, levelText.c_str());
+				al_draw_text(font, al_map_rgb(0,255,0), 465, 30, 0, levelText.c_str());
 
 				// Wyœwietlanie bloków do zbijania
 		
 				for (int i = 0; i < n; i++)
 				{
-					al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
+					if (level2Clicked) al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
+					else al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(12, 213, 123));
 					al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
 				}
 
 				//Wyswietlanie blokow zycia
 				for (int i = 0; i < 3; i++)
 				{
-					al_draw_filled_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(12, 213, 123));
+					al_draw_filled_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(0, 255, 0));
 					al_draw_rectangle(health[i]->x, health[i]->y, health[i]->x2, health[i]->y2, al_map_rgb(0, 0, 0), 3);
 				}
 
@@ -444,28 +460,20 @@ bool Game::game_loop() {
 						event.mouse.y >= buttonY && event.mouse.y <= buttonY + buttonHeight)
 					{
 						menu = true;
-						new_game = false;
+						level = 1;
+						level2Clicked = false;
+						new_game = true;
 						returnToMenu = false; // Zresetowanie wartoœci returnToMenu
 					}
 				}
 
-				al_draw_filled_rectangle(buttonX, buttonY + 60, buttonX + buttonWidth, buttonY + buttonHeight + 60, al_map_rgb(66, 218, 245));
-				al_draw_rectangle(buttonX, buttonY + 60, buttonX + buttonWidth, buttonY + buttonHeight + 60, al_map_rgb(255, 255, 255), 2);
-				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 215, ALLEGRO_ALIGN_CENTER, "Level 2");
-
-				if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && event.mouse.button & 1)
+				if (level != 2)
 				{
-					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
-						event.mouse.y >= buttonY + 60 && event.mouse.y <= buttonY + buttonHeight + 60)
-					{
-						level = 2;
-						level2Clicked = true;
-						new_game = false;
+					al_draw_filled_rectangle(buttonX, buttonY + 60, buttonX + buttonWidth, buttonY + buttonHeight + 60, al_map_rgb(66, 218, 245));
+					al_draw_rectangle(buttonX, buttonY + 60, buttonX + buttonWidth, buttonY + buttonHeight + 60, al_map_rgb(255, 255, 255), 2);
+					al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 215, ALLEGRO_ALIGN_CENTER, "Level 2");
 
-						
-					}
 				}
-
 
 			}
 			else
