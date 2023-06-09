@@ -386,7 +386,6 @@ bool Game::game_loop() {
 			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
 			menu = false;
 			new_game = true;
-			level2Clicked = false; // Zresetowanie wartoœci level2Clicked
 			b.set_speed(0);
 			b.x = SCREEN_WIDTH / 2 - 50;
 			b.y = SCREEN_HEIGHT / 2;
@@ -432,9 +431,17 @@ bool Game::game_loop() {
 		
 				for (int i = 0; i < n; i++)
 				{
-					if (level2Clicked) al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
-					else al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(12, 213, 123));
-					al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
+					if (level2Clicked)
+					{
+						al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, blockColors[i]);
+						al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
+					}
+					else if (!level2Clicked)
+					{
+						Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
+						al_draw_filled_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(12, 213, 123));
+						al_draw_rectangle(blocks[i]->x, blocks[i]->y, blocks[i]->x2, blocks[i]->y2, al_map_rgb(0, 0, 0), 3);
+					}
 				}
 
 				//Wyswietlanie blokow zycia
@@ -492,6 +499,7 @@ bool Game::game_loop() {
 					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
 						event.mouse.y >= buttonY && event.mouse.y <= buttonY + buttonHeight)
 					{
+						level2Clicked = false;
 						menu = true;
 						new_game = false;
 						returnToMenu = false; // Zresetowanie wartoœci returnToMenu
