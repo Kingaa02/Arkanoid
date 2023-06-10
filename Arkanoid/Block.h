@@ -1,5 +1,6 @@
 #pragma once
 
+///Klasa bloku
 class Block
 {
 public:
@@ -14,7 +15,7 @@ public:
     {
         hitCount = 0;
     }
-
+        ///Liczenie uderzen bloku
         int getHitCount() const {
             return hitCount;
         }
@@ -22,6 +23,7 @@ public:
         void setHitCount(int count) {
             hitCount = count;
         }
+
     
 };
 

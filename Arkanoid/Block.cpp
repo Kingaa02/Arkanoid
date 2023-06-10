@@ -1,5 +1,6 @@
 #include "Block.h"
 
+///Klasa bloku
 Block::Block(int x)
 {
 	this->x = x - 140;

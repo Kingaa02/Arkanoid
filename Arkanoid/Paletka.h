@@ -1,7 +1,7 @@
 #pragma once
-
-
 #define SCREEN_WIDTH 976
+
+///Klasa paletki
 class Paletka
 {
 public:

@@ -1,6 +1,7 @@
 ﻿#include "Pilka.h"
 #include <cmath>
 
+///Klasa pilki
 Pilka::Pilka()
 {
 	x = SCREEN_WIDTH / 2 - 50;
@@ -12,19 +13,19 @@ Pilka::Pilka()
 	promien = 10;
 }
 
+///Szybkosc pilki
 void Pilka::set_speed(int s)
 {
 	speed = s;
 	vx = vy = speed;
 }
 
-
-
+///Kolizje pilki z blokami
 bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points, int level)
 {
 	for (int i = 0; i < n; i++)
 	{
-		///Sprawdzenie czy pi³ka dotknê³a bloku
+		// Sprawdzenie czy pilka dotknela bloku
 		if (ball->x + ball->promien >= blocks[i]->x &&
 			ball->x - ball->promien <= blocks[i]->x2 &&
 			ball->y + ball->promien >= blocks[i]->y &&
@@ -32,61 +33,67 @@ bool Pilka::collision(Pilka* ball, Block* blocks[], int n, int points, int level
 		{
 			blocks[i]->setHitCount(blocks[i]->getHitCount() + 1);
 
-			///Sprawdzenie z której strony blok zostal dotkniêty góra/dó³/lewo/prawo
-			if (ball->x < blocks[i]->x || ball->x > blocks[i]->x2)
+			// Sprawdzenie z ktorej strony blok zostal dotkniety gora/dol/lewo/prawo
+			bool isCollisionFromTop = ball->y - ball->promien <= blocks[i]->y2 && ball->vy > 0;
+			bool isCollisionFromBottom = ball->y + ball->promien >= blocks[i]->y && ball->vy < 0;
+			bool isCollisionFromLeft = ball->x + ball->promien >= blocks[i]->x && ball->x - ball->promien <= blocks[i]->x;
+			bool isCollisionFromRight = ball->x - ball->promien <= blocks[i]->x2 && ball->x + ball->promien >= blocks[i]->x2;
+
+			if (isCollisionFromTop || isCollisionFromBottom)
 			{
-				ball->vx *= (-1);
+				ball->vy *= -1;
+				ball->y += ball->vy;
 			}
-			else
+
+			if (isCollisionFromLeft || isCollisionFromRight)
 			{
-				ball->vy *= (-1);
+				ball->vx *= -1;
+				ball->x += ball->vx;
 			}
 
 			if (ball->level == 1)
 			{
-					delete(blocks[i]);
-					ball->points += 10;
-					ball->blocksDestroyed += 1;
+				delete blocks[i];
+				ball->points += 10;
+				ball->blocksDestroyed += 1;
 			}
 			else if (ball->level == 2)
 			{
-				if (blocks[i]->getHitCount() >= 2)
+				if (blocks[i]->getHitCount() == 2)
 				{
-					delete(blocks[i]);
+					delete blocks[i];
 					ball->points += 10;
 					ball->blocksDestroyed += 1;
 					blocks[i]->setHitCount(0);
 				}
 			}
 
-	
 			return true;
 		}
-
 	}
 
 	return false;
 }
 
-
+///Odbijanie pilki od reszty obiektow
 void Pilka::odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* health[], int* z)
 {
 
 	ball->x += ball->vx;
 	ball->y += ball->vy;
 
-	///Kolizja pi³ki z lew¹ stron¹ ekranu
+	///Kolizja pilki z lewa strona ekranu
 	if (ball->x - ball->promien <= 0)
 	{
 		ball->vx *= (-1);
 	}
 
-	///Kolizja pi³ki z praw¹ stron¹ ekranu
+	///Kolizja pilki z prawa strona ekranu
 	if (ball->x + ball->promien >= SCREEN_WIDTH)
 	{
 		ball->vx *= (-1);
 	}
-	///Kolizja pi³ki z do³em stron¹ ekranu
+	///Kolizja pilki z dolem ekranu
 	if (ball->y + ball->promien >= SCREEN_HEIGHT)
 	{
 		ball->x = SCREEN_WIDTH / 2 - 50;
@@ -99,7 +106,7 @@ void Pilka::odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* he
 		}
 
 	}
-	///Kolizja pi³ki z gór¹ stron¹ ekranu
+	///Kolizja pilki z gora ekranu
 	if (ball->y - ball->promien <= 0)
 	{
 		ball->vy *= (-1);
@@ -107,28 +114,29 @@ void Pilka::odbijanie(Pilka* ball, Paletka* p, Block* blocks[], int n, Block* he
 
 
 
-	// Kolizja piłki z paletką
+	// Kolizja pilki z paletka
 	if (ball->y + ball->promien > p->y && ball->y + ball->promien < p->y2)
 	{
 		if ((ball->x + ball->promien > p->x && ball->x + ball->promien < p->x2) ||
 			(ball->x - ball->promien > p->x && ball->x - ball->promien < p->x2) ||
-			(ball->x + ball->promien > p->x2 && ball->x - ball->promien < p->x))
+			((ball->x - ball->promien < p->x2 && ball->x + ball->promien > p->x)))
 		{
 
 			// Obliczanie względnego położenia piłki na paletce
 			float relativePosition = (ball->x - p->x) / p->width;
 
-			// Dostosowanie kąta odbicia na podstawie względnej pozycji
+			// Dostosowanie kata odbicia na podstawie względnej pozycji
 			const float maxReflectionAngle = 60.0f;  // Maksymalny kąt odbicia w stopniach
 			float reflectionAngle = relativePosition * (2 * maxReflectionAngle) - maxReflectionAngle;
 			float reflectionRadians = reflectionAngle * 3.14159f / 180.0f;
 
-			// Aktualizowanie prędkości piłki na podstawie kąta odbicia, zachowując prędkość
+			// Aktualizowanie predkosci pilki na podstawie kata odbicia, zachowując predkosc
 			float currentSpeed = sqrt(ball->vx * ball->vx + ball->vy * ball->vy);
 			ball->vx = currentSpeed * sin(reflectionRadians);
 			ball->vy = -currentSpeed * cos(reflectionRadians);
 		}
 	}
+
 	ball->collision(ball, blocks, n, points, level);
 
 }

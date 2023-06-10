@@ -2,6 +2,7 @@
 
 float x, y;
 
+///Sprawdzanie inicjalizacji
 void Game::sprawdzenie_init(bool test, string opis) {
 	if (test)
 		return;
@@ -9,7 +10,7 @@ void Game::sprawdzenie_init(bool test, string opis) {
 	cout << "Nie udalo sie uruchomic " << opis << endl;
 }
 
-//Inicjalizacja ¿ycia
+///Inicjalizacja zycia
 void initializeHealthBlocks(Block* health[], int health_z)
 {
 	for (int i = 0; i < 3; i++)
@@ -36,7 +37,8 @@ void initializeHealthBlocks(Block* health[], int health_z)
 	}
 }
 
-Block** createBlocks(int n, int ilosc_wierszy, int ilosc_rzedow, bool level2Clicked) {
+///Inicjalizacja blokow do zbijania
+Block** createBlocks(int n, int ilosc_wierszy, int ilosc_rzedow) {
 	Block** blocks = new Block * [n];
 
 	for (int i = 0; i < n; i++) {
@@ -86,50 +88,53 @@ bool Game::game_loop() {
 	sprawdzenie_init(al_install_audio(), "audio");
 	sprawdzenie_init(al_init_acodec_addon(), "acodec");
 
-
+	///Wyswietlanie obrazu
 	ALLEGRO_DISPLAY* display = al_create_display(SCREEN_WIDTH, SCREEN_HEIGHT);
 	sprawdzenie_init(display, "Obraz");
 
-	//MUZYKA
+	///Muzyka
 	al_reserve_samples(1);
 	ALLEGRO_SAMPLE* song = al_load_sample("song.wav");
 	ALLEGRO_SAMPLE_INSTANCE* songInstance = al_create_sample_instance(song);
 	al_set_sample_instance_playmode(songInstance, ALLEGRO_PLAYMODE_LOOP);
 	al_attach_sample_instance_to_mixer(songInstance, al_get_default_mixer());
 
-
+	///Zegar
 	ALLEGRO_TIMER* timer = al_create_timer(1.0 / 60.0);
 	sprawdzenie_init(timer, "Zegar");
 
+	///Bitmapy do tla w menu i grze
 	ALLEGRO_BITMAP* background = al_load_bitmap("background.png");
 	sprawdzenie_init(background, "background");
 
 	ALLEGRO_BITMAP* background2 = al_load_bitmap("background2.png");
 	sprawdzenie_init(background, "background2");
 
-	//KURSOR
+	///Kursor myszki
 	ALLEGRO_BITMAP* cursorImage = al_load_bitmap("cursor.png");
 	ALLEGRO_MOUSE_STATE mouseState;
-
+	
+	///Kolejka
 	ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 	sprawdzenie_init(queue, "Kolejka");
 
+	///Czcionki uzywane w grze
 	ALLEGRO_FONT* font = al_load_font("FjallaOne.ttf", 20, 0);
 	ALLEGRO_FONT* font2 = al_load_font("FjallaOne.ttf", 100, 0);
 	ALLEGRO_FONT* font3 = al_load_font("FjallaOne.ttf", 36, 0);
 	ALLEGRO_FONT* font4 = al_load_font("FjallaOne.ttf", 70, 0);
 
+	///Zarejestrowanie eventow
 	al_register_event_source(queue, al_get_keyboard_event_source());
 	al_register_event_source(queue, al_get_mouse_event_source());
 	al_register_event_source(queue, al_get_display_event_source(display));
 	al_register_event_source(queue, al_get_timer_event_source(timer));
 
 
-
-
 	Pilka b;
 	Paletka p;
 
+	///Wszystkie flagi uzywane w grze
 	bool done = false;
 	bool redraw = true;
 	bool menu = true;
@@ -137,6 +142,9 @@ bool Game::game_loop() {
 	bool new_game = false;
 	bool space = false;
 	bool level2Clicked = false;
+	bool right = false;
+	bool left = false;
+	bool returnToMenu = false;
 
 	ALLEGRO_EVENT event;
 
@@ -144,17 +152,15 @@ bool Game::game_loop() {
 	const int ilosc_rzedow = 10;
 	const int n = (ilosc_wierszy * ilosc_rzedow);
 
-	Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
+	Block** blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
 
-
-
-	bool right = false;
-	bool left = false;
 	int pressed = false;
 	int mouse_x, mouse_y;
 
+	///Odtwarzanie muzyki
 	al_play_sample_instance(songInstance);
 
+	///Rozpoczecie dzialania zegara
 	al_start_timer(timer);
 
 	int health_z = 2;
@@ -162,10 +168,10 @@ bool Game::game_loop() {
 
 	initializeHealthBlocks(health, health_z);
 
+	///Stworzenie kursora
 	ALLEGRO_MOUSE_CURSOR* cursor = al_create_mouse_cursor(cursorImage, 0, 0);
 	al_set_mouse_cursor(display, cursor);
 
-	bool returnToMenu = false;
 	int buttonX = SCREEN_WIDTH / 2 - 100;
 	int buttonY = SCREEN_HEIGHT / 2 + 150;
 	int buttonWidth = 200;
@@ -173,7 +179,7 @@ bool Game::game_loop() {
 
 	srand(time(NULL));
 
-	// Randomizacja koloru bloków
+	// Randomizacja koloru bloków do zbijania
 	vector<ALLEGRO_COLOR> blockColors;
 	for (int i = 0; i < ilosc_wierszy; i++)
 	{
@@ -183,7 +189,7 @@ bool Game::game_loop() {
         blockColors.push_back(randomColor);
     }
 }
-
+	///Rozpoczecie glownej petli gry
 	while (true && running)
 	{
 		al_wait_for_event(queue, &event);
@@ -197,6 +203,7 @@ bool Game::game_loop() {
 
 		al_set_target_bitmap(al_get_backbuffer(display));
 
+		///Menu
 		if (menu)
 		{
 			al_draw_bitmap(background, 0, 0, 0);
@@ -208,14 +215,14 @@ bool Game::game_loop() {
 		switch (event.type)
 		{
 		case ALLEGRO_EVENT_TIMER:
-			///Poruszanie siê pi³ki
+			///Poruszanie sie pilki
 			b.odbijanie(&b, &p, blocks, n, health, &health_z);
 
 
 			/// Poruszanie paletki
 			if (right)
 			{
-				/// Ograniczenie ruchu paletki na szerokoœæ ekranu z prawej strony
+				/// Ograniczenie ruchu paletki na szerokosc ekranu z prawej strony
 				if (p.x < SCREEN_WIDTH && p.x2 < SCREEN_WIDTH)
 				{
 					p.x += p.dx;
@@ -226,7 +233,7 @@ bool Game::game_loop() {
 
 			if (left)
 			{
-				/// Ograniczenie ruchu paletki na szerokoœæ ekranu z prawej strony
+				/// Ograniczenie ruchu paletki na szerokosc ekranu z prawej strony
 				if (p.x > 0 && p.x2 > 0)
 				{
 					p.x -= p.dx;
@@ -237,9 +244,10 @@ bool Game::game_loop() {
 			redraw = true;
 			break;
 
-			/// Poruszanie paletki wykrywanie kierunku 
+
 		case ALLEGRO_EVENT_KEY_DOWN:
-			/// Wykrywanie wciœniêcia przycisku  
+
+			/// Wykrywanie wcisniecia przyciskow do poruszania paletka 
 			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT)
 				right = true;
 
@@ -247,12 +255,12 @@ bool Game::game_loop() {
 				left = true;
 
 
-			/// Wyrzucenie pi³ki
+			/// Wyrzucenie pilki
 			if (event.keyboard.keycode == ALLEGRO_KEY_SPACE)
 			{
 				if (b.level == 1)
 				{
-					b.set_speed(4);
+					b.set_speed(6);
 				}
 				else if (b.level == 2)
 				{
@@ -262,7 +270,8 @@ bool Game::game_loop() {
 			}
 
 			break;
-			/// Wykrywanie puszczenia przycisku
+
+		/// Wykrywanie puszczenia przycisku
 		case ALLEGRO_EVENT_KEY_UP:
 			if (event.keyboard.keycode == ALLEGRO_KEY_RIGHT)
 				right = false;
@@ -272,10 +281,12 @@ bool Game::game_loop() {
 
 			break;
 
+		///Obsluga zdarzenia zamkniecia okna
 		case ALLEGRO_EVENT_DISPLAY_CLOSE:
 			done = true;
 			break;
 
+		///Obsluga zdarzen myszki
 		case ALLEGRO_EVENT_MOUSE_BUTTON_DOWN:
 
 			if (event.mouse.button & 1)
@@ -306,7 +317,7 @@ bool Game::game_loop() {
 
 				if (!new_game)
 				{
-					// Wyjœcie
+					// Wyjscie
 					if (event.mouse.x > SCREEN_WIDTH / 2 - 65 && event.mouse.x < SCREEN_WIDTH / 2 + 55 && event.mouse.y > SCREEN_HEIGHT / 2 + 30 && event.mouse.y < SCREEN_HEIGHT / 2 + 70)
 					{
 						menu = false;
@@ -322,7 +333,7 @@ bool Game::game_loop() {
 					returnToMenu = true;
 				}
 
-				// Obs³uga przycisku "LEVEL 2"
+				// Obsluga przycisku "LEVEL 2"
 				if (b.level != 2)
 				{
 					if (event.mouse.x >= buttonX && event.mouse.x <= buttonX + buttonWidth &&
@@ -349,7 +360,7 @@ bool Game::game_loop() {
 		if (done)
 			break;
 
-		///reset przed rozpoczêciem nowej gry
+		///Reset przed rozpoczeciem nowej gry
 		if (returnToMenu)
 		{
 			health_z = 2;
@@ -357,7 +368,7 @@ bool Game::game_loop() {
 			initializeHealthBlocks(health, health_z);
 			b.blocksDestroyed = 0;
 			b.points = 0;
-			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
+			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
 			menu = true;
 			new_game = false;
 			returnToMenu = false;
@@ -365,17 +376,17 @@ bool Game::game_loop() {
 			b.level = 1;
 		}
 
-
+		///Level 2
 		if (level2Clicked)
 		{
 			health_z = 2;
 			*health[3];
 			initializeHealthBlocks(health, health_z);
 			b.blocksDestroyed = 0;
-			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow, level2Clicked);
+			blocks = createBlocks(n, ilosc_wierszy, ilosc_rzedow);
 			menu = false;
 			new_game = true;
-			level2Clicked = false; // Zresetowanie wartoœci level2Clicked
+			level2Clicked = false; // Zresetowanie wartosci level2Clicked
 			b.set_speed(0);
 			b.x = SCREEN_WIDTH / 2 - 50;
 			b.y = SCREEN_HEIGHT / 2;
@@ -387,7 +398,7 @@ bool Game::game_loop() {
 
 		if (redraw && al_is_event_queue_empty(queue) && new_game)
 		{
-			///Odœwie¿anie ekranu
+			///Odswiezanie ekranu
 			al_draw_bitmap(background2, 0, 0, 0);
 
 			string pointsText = to_string(b.points);
@@ -395,15 +406,16 @@ bool Game::game_loop() {
 
 			if ((health_z >= 0) && (b.blocksDestroyed < ilosc_rzedow * ilosc_wierszy))
 			{
+				///Komunikat o wcisnieciu spacji
 				if (!pressed && !space)
 				{
 					al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 20, ALLEGRO_ALIGN_CENTER, "Press 'Space' to start");
 				}
-				/// Wyœwietlanie pi³ki 
+				/// Wyswietlanie pilki 
 				al_draw_filled_circle(b.x, b.y, b.promien, al_map_rgb(255, 255, 255));
 				al_draw_circle(b.x, b.y, b.promien, al_map_rgb(0, 0, 0), 3);
 
-				/// Wyœwietlanie paletki
+				/// Wyswietlanie paletki
 				al_draw_filled_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(255, 0, 0));
 				al_draw_rectangle(p.x, p.y, p.x2, p.y2 - 5, al_map_rgb(9, 0, 0), 3);
 
@@ -411,14 +423,13 @@ bool Game::game_loop() {
 				al_draw_text(font, al_map_rgb(0, 255, 0), 450, 0, 0, "LEVEL");
 				al_draw_text(font, al_map_rgb(0, 255, 0), 910, 0, 0, "POINTS");
 
-				///Wyœwietlanie liczby punktów
+				///Wyswietlanie liczby punktów
 				al_draw_text(font, al_map_rgb(0, 255, 0), 930, 30, 0, pointsText.c_str());
 
-				///Wyœwietlanie poziomu
+				///Wyswietlanie poziomu
 				al_draw_text(font, al_map_rgb(0, 255, 0), 465, 30, 0, levelText.c_str());
 
-				// Wyœwietlanie bloków do zbijania
-
+				// Wyswietlanie bloków do zbijania
 				for (int i = 0; i < n; i++)
 				{
 					if (b.level == 2)
@@ -449,6 +460,7 @@ bool Game::game_loop() {
 				}
 
 			}
+			///Ekran wygranej
 			else if (b.blocksDestroyed == ilosc_rzedow * ilosc_wierszy) {
 				al_draw_text(font2, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 200, ALLEGRO_ALIGN_CENTER, "YOU WIN");
 				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 50, ALLEGRO_ALIGN_CENTER, "Total points:");
@@ -467,7 +479,7 @@ bool Game::game_loop() {
 						b.level = 1;
 						level2Clicked = false;
 						new_game = true;
-						returnToMenu = false; // Zresetowanie wartoœci returnToMenu
+						returnToMenu = false; // Zresetowanie wartosci returnToMenu
 					}
 				}
 
@@ -482,6 +494,7 @@ bool Game::game_loop() {
 			}
 			else
 			{
+				///Ekran przegranej
 				al_draw_text(font2, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + -200, ALLEGRO_ALIGN_CENTER, "GAME OVER");
 				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + -50, ALLEGRO_ALIGN_CENTER, "Total points:");
 				al_draw_text(font3, al_map_rgb(255, 255, 255), SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, ALLEGRO_ALIGN_CENTER, pointsText.c_str());
@@ -498,7 +511,7 @@ bool Game::game_loop() {
 					{
 						menu = true;
 						new_game = false;
-						returnToMenu = false; // Zresetowanie wartoœci returnToMenu
+						returnToMenu = false; // Zresetowanie wartosci returnToMenu
 					}
 				}
 			}
@@ -507,9 +520,11 @@ bool Game::game_loop() {
 
 			redraw = false;
 		}
+		///Aktualizacja zawartości bufora graficznego
 		al_flip_display();
 	}
 
+	///Zwolnienie pamieci
 	al_destroy_display(display);
 	al_destroy_timer(timer);
 	al_destroy_event_queue(queue);
@@ -517,6 +532,7 @@ bool Game::game_loop() {
 	al_destroy_font(font);
 	al_destroy_font(font2);
 	al_destroy_bitmap(cursorImage);
+	al_destroy_bitmap(background2);
 
 	return 1;
 

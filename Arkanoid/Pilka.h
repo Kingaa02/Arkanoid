@@ -4,6 +4,7 @@
 #define SCREEN_WIDTH 976
 #define SCREEN_HEIGHT 614
 
+///Klasa pilki
 class Pilka
 {
 
